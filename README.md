@@ -4,6 +4,7 @@ Second iteration of the ChePT Neural Chess Engine - Refined and Improved
 ## Enter the Virtual Environment
 
     $ conda env create --file environment.yml
+    $ conda activate venv
 
 ## Install and Preprocess the Datasets
 
