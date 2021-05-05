@@ -1,0 +1,25 @@
+# Unrelated files that like to live nearby
+.DS_Store
+.vscode
+
+# Large data files that can be downloaded using bundled python helpers
+data/datasets/*
+data/datasets-cleaned/*
+
+# Model parameters
+ckpt/*
+ckpts/
+ckpts/finetune_default/
+ckpts/finetune_mid/
+ckpts/finetune_late/
+
+# Useful pickled files
+bot_scores.pkl
+comp_scores.pkl
+
+# Results
+commentary_results/
+
+# Python corrollary
+__pycache__
+.ipynb_checkpoints/
