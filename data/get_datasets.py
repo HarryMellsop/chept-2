@@ -128,5 +128,11 @@ if __name__ == "__main__":
         
     if args.preprocess:
         tprint("ChePT   Preprocessor")
-        preprocess_kingbase()
-        preprocess_kaggle()
+        try:
+            preprocess_kingbase()
+        except FileNotFoundError:
+            print('Kingbase file not found!')
+        try:
+            preprocess_kaggle()
+        except FileNotFoundError:
+            print('Kaggle file not found!')
