@@ -479,19 +479,19 @@ class Finetune_Chess(Dataset):
 
     pass
 
-class Pretrain_Moves(Dataset):
+class Pretrain_Comm(Dataset):
 
     pass
 
-class Finetune_Moves(Dataset):
+class Finetune_Comm(Dataset):
 
     pass
 
 
 finetune_versions = {0: Pretrain_Chess,
                      1: Finetune_Chess,
-                     2: Pretrain_Moves,
-                     3: Finetune_Moves,
+                     2: Pretrain_Comm,
+                     3: Finetune_Comm,
                      4: Finetune_Early,
                      5: Finetune_Middle,
                      6: Finetune_Late,
