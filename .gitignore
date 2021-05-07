@@ -2,6 +2,10 @@
 .DS_Store
 .vscode
 
+# Don't save the virtual environment
+venv
+venv/
+
 # Large data files that can be downloaded using bundled python helpers
 data/datasets/*
 data/datasets-cleaned/*

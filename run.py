@@ -20,6 +20,7 @@ def main(data_path, version, config_args, train_args, func, save_dir, pretrain_s
 
     # get device
     device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
+    print("DEVICE: {}".format(device))
 
     # load pretrain dataset
     games = open(data_path).read()
