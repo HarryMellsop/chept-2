@@ -13,7 +13,7 @@ class Pretrain_Chess(Dataset):
         self.block_size = block_size
         self.PAD_CHAR = u"\u25A1"
         self.MASK_CHAR_1 = u"\u2047"
-        self.MASK_CHAR_2 = u"\u2047" # INCLUDE BOTH MASK CHARACTERS IN PRETRAIN TOO
+        self.MASK_CHAR_2 = u"\u2048" # INCLUDE BOTH MASK CHARACTERS IN PRETRAIN TOO
 
         chars = list(sorted(list(set(data))))
         if '\n' in chars:
@@ -35,6 +35,7 @@ class Pretrain_Chess(Dataset):
 
         assert len(self.stoi) == len(self.itos)
 
+        # TODO: Vocab needs to be encoded and include chess + commentary together (from the very start)
         self.vocab_size = len(self.stoi)
         self.data_size = len(data)
 
