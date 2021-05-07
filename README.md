@@ -10,3 +10,7 @@ Second iteration of the ChePT Neural Chess Engine - Refined and Improved
 ## Install and Preprocess the Datasets
 
     $ python data/get_datasets.py --download --preprocess
+    
+## Pretrain
+
+    $ python run.py pretrain --version 0
