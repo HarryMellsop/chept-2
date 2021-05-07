@@ -9,7 +9,7 @@ class TrainerConfig:
 
     # optimization parameters
     max_epochs = 10
-    batch_size = 64
+    batch_size = 1
     learning_rate = 1e-4
     grad_norm_clip = 1.0
 
@@ -57,6 +57,8 @@ class Trainer:
 
     def train(self):
         model, config = self.model, self.config
+
+        print(config.batch_size)
 
         # create the optimizer
         optimizer = optim.Adam(

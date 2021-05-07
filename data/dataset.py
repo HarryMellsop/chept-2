@@ -41,6 +41,9 @@ class Pretrain_Chess(Dataset):
         print('Data has %d characters, %d unique.' % (self.data_size, self.vocab_size))
 
         self.data = list(data.encode('utf-8').decode('ascii', errors='ignore').split('\n'))[:-1]
+        print("Maximum data length:")
+        print(max([len(entry) for entry in self.data]))
+        print(self.block_size)
 
     def __len__(self):
         return len(self.data)
@@ -48,14 +51,10 @@ class Pretrain_Chess(Dataset):
     def __getitem__(self, idx):
 
         game = self.data[idx]
+        game = game + self.PAD_CHAR * (self.block_size - len(game))
 
-        x = game + self.PAD_CHAR * (self.block_size - len(game))
-        y = self.PAD_CHAR * idx + x[idx:]
-
-        assert len(x) == len(y) == self.block_size
-
-        x = x[:-1]
-        y = y[1:]
+        x = game[:-1]
+        y = game[1:]
 
         x = torch.tensor([self.stoi[c] for c in x], dtype=torch.long)
         y = torch.tensor([self.stoi[c] for c in y], dtype=torch.long)

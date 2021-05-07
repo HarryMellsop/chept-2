@@ -46,6 +46,8 @@ def main(data_path, version, config_args, train_args, func, save_dir, pretrain_s
                                          state_dict=state_dict,
                                          args_dict=train_args)
 
+    train_config.batch_size = 4
+
     model_trainer = trainer.Trainer(gpt_model,
                                     train_dataset,
                                     save_dir,
