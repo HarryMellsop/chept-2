@@ -10,15 +10,6 @@ class TrainerConfig:
 
     def __init__(self, func, state_dict, args_dict):
 
-        # optimization parameters
-        self.max_epochs = 10
-        self.batch_size = 1
-        self.learning_rate = 1e-4
-        self.grad_norm_clip = 1.0
-
-        # checkpoint settings
-        self.num_workers = 0
-
         # update new params
         self.func = func
         self.state_dict = state_dict
