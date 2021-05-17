@@ -13,4 +13,4 @@ Second iteration of the ChePT Neural Chess Engine - Refined and Improved
     
 ## Pretrain
 
-    $ python run.py pretrain --version 0
+    $ python run.py pretrain
