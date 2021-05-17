@@ -14,3 +14,5 @@ Second iteration of the ChePT Neural Chess Engine - Refined and Improved
 ## Pretrain
 
     $ python run.py pretrain
+
+Then accept the default presets when prompted.  You may need to use the --batch_size flag depending on your hardware constraints, as the model is extremely video memory intensive when using CUDA.
