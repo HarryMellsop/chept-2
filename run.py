@@ -93,10 +93,8 @@ if __name__ == "__main__":
 
     possible_versions = list(dataset.finetune_versions.keys())
 
-    if version and func == 'pretrain':
-        raise ValueError('Pretrain does not use versions.')
-    elif version and func == 'finetune':
-        assert version in possible_versions, 'Specified version does not exist!'
+    if not version:
+        version = 0
 
     elif not version and func == 'finetune':
         print('WARNING: FINETUNING WITHOUT A VERSION')
@@ -166,7 +164,7 @@ if __name__ == "__main__":
     config_args, train_args = arguments()
 
     # map version to train data:
-    v2d = {0: os.path.join(data_dir, 'kingbase_cleaned.txt')}
+    v2d = {0: os.path.join(data_dir, 'kaggle_cleaned.txt')}
     train_data_path = v2d[version]
 
     assert os.path.isfile(train_data_path)
