@@ -49,7 +49,9 @@ def get_losses(ckpt_dir):
     losses = []
     for file in tqdm.tqdm(files):
         iters.append(get_iteration_num(file))
-        losses.append(torch.load(file)["loss"])
+
+        # map to CPU cause we don't need CUDA here
+        losses.append(torch.load(file, map_location="cpu")["loss"])
 
     return iters, losses
 
