@@ -115,6 +115,8 @@ if __name__ == "__main__":
         else:
             raise FileExistsError('Must provide a dataset for training!')
 
+    data_dir_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir) if x[0] != '.']
+
     if not save_dir:
         save_dir = os.path.join('ckpts', func + '_default')
 
@@ -171,4 +173,4 @@ if __name__ == "__main__":
 
     assert os.path.isfile(train_data_path)
 
-    main(train_data_path, data_dir, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
+    main(train_data_path, data_dir_list, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
