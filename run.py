@@ -166,9 +166,4 @@ if __name__ == "__main__":
 
     assert os.path.isfile(train_data_path)
 
-<<<<<<< HEAD
     main(train_data_path, data_dir_list, version, config_args, train_args, func, save_dir, pretrain_state=ckpt_dict)
-=======
-    main(train_data_path, data_dir_list, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
-    4943104
->>>>>>> 6bdd36702c875806d5c2e92e52d972dd8f23453e
