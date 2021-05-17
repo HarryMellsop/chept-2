@@ -7,7 +7,8 @@ import questionary
 import torch
 import os
 
-def main(data_path, version, config_args, train_args, func, save_dir, pretrain_state=None):
+
+def main(data_paths, version, config_args, train_args, func, save_dir, pretrain_state=None):
 
     if pretrain_state:
         pretrain_vocab = {'itos': pretrain_state['itos'],
@@ -22,13 +23,10 @@ def main(data_path, version, config_args, train_args, func, save_dir, pretrain_s
     device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
     print("DEVICE: {}".format(device))
 
-    # load pretrain dataset
-    games = open(data_path).read()
-
     # build datasets
     print('\nProcessing dataset...')
 
-    train_dataset = dataset.Directory(games,
+    train_dataset = dataset.Directory(data_paths,
                                       version,
                                       config_args,
                                       pretrain_vocab)()
@@ -63,8 +61,8 @@ if __name__ == "__main__":
                         choices=["pretrain", "finetune"])
     parser.add_argument('--version', type=int, default=None,
                         help='Finetune version.')
-    parser.add_argument('--data_path', type=str,
-                        help='Dataset to use.')
+    parser.add_argument('--data_dir', type=str,
+                        help='Dataset directory to use.')
     parser.add_argument('--save_dir', type=str,
                         help='Directory to save checkpoints.')
 
@@ -94,7 +92,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Double check args
-    data_path = args.data_path
+    data_dir = args.data_dir
     save_dir = args.save_dir
     func = args.function
     version = args.version
@@ -111,13 +109,13 @@ if __name__ == "__main__":
         print('SETTING TO DEFAULT FINETUNE VERSION 0')
         version = 0
 
-    if not data_path:
-        def_data = 'kingbase_cleaned' if func == 'pretrain' else 'kaggle_cleaned'
+    if not data_dir:
+        def_data = 'data/datasets-cleaned'
 
-        answer = questionary.confirm(f'Use default data--{def_data}.txt?').ask()
+        answer = questionary.confirm(f'Use default data directory--{def_data}?').ask()
         if answer:
-            data_path = f'data/datasets-cleaned/{def_data}.txt'
-            assert os.path.isfile(data_path), 'DATA FILE NOT FOUND'
+            data_dir = 'data/datasets-cleaned'
+            assert os.path.isfile(data_dir), 'DATA FILE NOT FOUND'
         else:
             raise FileExistsError('Must provide a dataset for training!')
 
@@ -150,7 +148,7 @@ if __name__ == "__main__":
         pretrain_dict = None
 
     # Check config args
-    meta_args = ['data_path', 'save_dir', 'function', 'pretrain_params']
+    meta_args = ['data_dir', 'save_dir', 'function', 'pretrain_params']
     super_config_train_args = {key: val for key, val in vars(args).items() if key not in meta_args}     
 
     default_config_args = utils.default_config_args
@@ -171,4 +169,4 @@ if __name__ == "__main__":
     arguments = utils.TrainArgs(args.args_path, super_config_train_args, pretrain_args=pretrain_args)
     config_args, train_args = arguments()
 
-    main(data_path, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
+    main(data_dir, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
