@@ -1,3 +1,4 @@
+from data.vocab import CharVocab
 import random
 import torch
 from torch.utils.data import Dataset
@@ -8,40 +9,22 @@ game_splits = {'early': 0,
 
 class Pretrain_Chess(Dataset):
 
-    def __init__(self, data, block_size, pretrain_vocab):
+    def __init__(self, train_data_path, misc_data_paths, block_size, pretrain_vocab):
 
         self.block_size = block_size
-        self.PAD_CHAR = u"\u25A1"
-        self.MASK_CHAR_1 = u"\u2047"
-        self.MASK_CHAR_2 = u"\u2048" # INCLUDE BOTH MASK CHARACTERS IN PRETRAIN TOO
 
-        chars = list(sorted(list(set(data))))
-        if '\n' in chars:
-            chars.remove('\n')
+        # extract all of the relevant training games
+        misc_dataset = []
+        train_dataset = open(train_data_path, 'r').readlines()
+        for path in misc_data_paths:
+            misc_dataset = misc_dataset + open(path, 'r').readlines()
 
-        # Check and insert pad and mask chars
-        if self.PAD_CHAR in chars:
-            chars.remove(self.PAD_CHAR)
-        chars.insert(0, self.PAD_CHAR)
-        if self.MASK_CHAR_1 in chars:
-            chars.remove(self.MASK_CHAR_1)
-        chars.insert(0, self.MASK_CHAR_1)
-        if self.MASK_CHAR_2 in chars:
-            chars.remove(self.MASK_CHAR_2)
-        chars.insert(0, self.MASK_CHAR_2)
-
-        self.stoi = {i:n for n, i in enumerate(chars)}
-        self.itos = {n:i for n, i in enumerate(chars)}
-
-        assert len(self.stoi) == len(self.itos)
+        self.vocab = CharVocab(misc_dataset + train_dataset)
+        print(f'Data consists of {len(self.vocab.stoi)} unique characters')
 
         # TODO: Vocab needs to be encoded and include chess + commentary together (from the very start)
-        self.vocab_size = len(self.stoi)
-        self.data_size = len(data)
+        self.data = [game.encode('utf-8').decode('ascii', errors='ignore') for game in train_dataset]
 
-        print('Data has %d characters, %d unique.' % (self.data_size, self.vocab_size))
-
-        self.data = list(data.encode('utf-8').decode('ascii', errors='ignore').split('\n'))[:-1]
         print("Maximum data length:")
         print(max([len(entry) for entry in self.data]))
         print(self.block_size)

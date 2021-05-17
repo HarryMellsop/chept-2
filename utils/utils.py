@@ -13,7 +13,7 @@ default_config_args = {
 
 default_train_args = {
     "max_epochs": 1,
-    "batch_size": 8,
+    "batch_size": 4,
     "learning_rate": 1e-3,
     "num_workers": 4
 }
