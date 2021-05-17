@@ -62,7 +62,10 @@ if __name__ == '__main__':
 
     # temporary naive prediction logic
 
+    game_str = ''
     while True:
-        game_str = input("Enter the game string: ").split(" ")
-        print(get_prediction(game_str, gpt_model, stoi, itos))
+        game_str += input(f"Enter your move from state {game_str}")
+        pred = get_prediction(game_str.split(" "), gpt_model, stoi, itos)
+        print(f"My prediction is: {pred}")
+        game_str += " " + pred + " "
         
