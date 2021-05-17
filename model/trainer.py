@@ -42,8 +42,8 @@ class Trainer:
         save_path = os.path.join(self.save_dir, path)
         ckpt_model = self.model.module if hasattr(self.model, "module") else self.model
         save_dict = {'state_dict': ckpt_model.state_dict(),
-                     'itos': self.train_dataset.itos,
-                     'stoi': self.train_dataset.stoi,
+                     'itos': self.train_dataset.vocab.itos,
+                     'stoi': self.train_dataset.vocab.stoi,
                      'model_config': self.model_config,
                      'train_config': self.config}
 

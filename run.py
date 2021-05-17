@@ -28,7 +28,7 @@ def main(train_data_path, data_paths, version, config_args, train_args, func, sa
                                       config_args)()
     # load model
     mconf = model.GPTConfig(
-        vocab_size=train_dataset.vocab_size,
+        vocab_size=train_dataset.vocab.vocab_size,
         args_dict=config_args
     )
 
@@ -39,8 +39,6 @@ def main(train_data_path, data_paths, version, config_args, train_args, func, sa
     train_config = trainer.TrainerConfig(func=func,
                                          state_dict=state_dict,
                                          args_dict=train_args)
-
-    train_config.batch_size = 4
 
     model_trainer = trainer.Trainer(gpt_model,
                                     train_dataset,

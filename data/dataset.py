@@ -16,16 +16,15 @@ class Pretrain_Chess(Dataset):
 
         # extract all of the relevant training games
         misc_dataset = []
-        train_dataset = open(train_data_path, 'r').readlines()
+        train_dataset = open(train_data_path, 'r').read().splitlines()
         for path in misc_data_paths:
-            misc_dataset = misc_dataset + open(path, 'r').readlines()
+            misc_dataset = misc_dataset + open(path, 'r').read().splitlines()
 
         self.vocab = CharVocab(misc_dataset + train_dataset)
         print(f'Data consists of {len(self.vocab.stoi)} unique characters')
 
         # TODO: Vocab needs to be encoded and include chess + commentary together (from the very start)
         self.data = [game.encode('utf-8').decode('ascii', errors='ignore') for game in train_dataset]
-
         print("Maximum data length:")
         print(max([len(entry) for entry in self.data]))
         print(self.block_size)
@@ -36,13 +35,13 @@ class Pretrain_Chess(Dataset):
     def __getitem__(self, idx):
 
         game = self.data[idx]
-        game = game + self.PAD_CHAR * (self.block_size - len(game))
+        game = game + self.vocab.PAD_CHAR * (self.block_size - len(game))
 
         x = game[:-1]
         y = game[1:]
 
-        x = torch.tensor([self.stoi[c] for c in x], dtype=torch.long)
-        y = torch.tensor([self.stoi[c] for c in y], dtype=torch.long)
+        x = torch.tensor([self.vocab.stoi[c] for c in x], dtype=torch.long)
+        y = torch.tensor([self.vocab.stoi[c] for c in y], dtype=torch.long)
 
         return x, y
 
