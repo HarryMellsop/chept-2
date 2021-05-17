@@ -38,14 +38,15 @@ class Trainer:
             self.device = torch.cuda.current_device()
             self.model = torch.nn.DataParallel(self.model).to(self.device)
 
-    def save_checkpoint(self, path):
+    def save_checkpoint(self, path, loss=None):
         save_path = os.path.join(self.save_dir, path)
         ckpt_model = self.model.module if hasattr(self.model, "module") else self.model
         save_dict = {'state_dict': ckpt_model.state_dict(),
                      'itos': self.train_dataset.vocab.itos,
                      'stoi': self.train_dataset.vocab.stoi,
                      'model_config': self.model_config,
-                     'train_config': self.config}
+                     'train_config': self.config,
+                     'loss': loss}
 
         torch.save(save_dict, save_path)
 
@@ -71,9 +72,12 @@ class Trainer:
 
             min_loss = float('inf')
             pbar = tqdm(enumerate(loader), total=len(loader))
+            cumulative_loss = 0
             for it, (x, y) in pbar:
-                if it % 1000 == 0:
-                    self.save_checkpoint(f'iter_{it}.pt')
+                if it % config.save_interval == 0:
+                    avg_loss = cumulative_loss / config.save_interval
+                    self.save_checkpoint(f'iter_{it}.pt', loss=avg_loss)
+                    cumulative_loss = 0
 
                 # place data on the correct device
                 x = x.to(self.device)
@@ -85,7 +89,10 @@ class Trainer:
                     loss = loss.mean()
                 if loss <= (0.8 * min_loss):
                     min_loss = loss
-                    self.save_checkpoint('best_loss.pt')
+                    self.save_checkpoint('best_loss.pt', loss=loss.item())
+
+                # accumulate avg loss for readout
+                cumulative_loss += loss.item()
 
                 # backprop and update the parameters
                 model.zero_grad()

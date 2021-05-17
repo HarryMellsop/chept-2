@@ -16,7 +16,8 @@ default_train_args = {
     "batch_size": 2,
     "grad_norm_clip": 1.0,
     "learning_rate": 1e-3,
-    "num_workers": 4
+    "num_workers": 4,
+    "save_interval": 1000,
 }
 
 
