@@ -7,9 +7,10 @@ game_splits = {'early': 0,
                'mid': 16,
                'late': 32}
 
+
 class Pretrain_Chess(Dataset):
 
-    def __init__(self, train_data_path, misc_data_paths, block_size, pretrain_vocab):
+    def __init__(self, train_data_path, misc_data_paths, block_size):
 
         self.block_size = block_size
 
@@ -386,19 +387,18 @@ class Commentary_Dataset(Dataset):
 
 class Directory:
 
-    def __init__(self, data, version, config_args, pretrain_vocab=None):
+    def __init__(self, train_data_path, misc_data_paths, version, config_args):
 
-        self.data = data
+        self.train_data_path = train_data_path
+        self.misc_data_paths = misc_data_paths
         self.version = version
         self.config_args = config_args
-        self.pretrain_vocab = pretrain_vocab
 
         self.direct = finetune_versions
-        self.direct.update({None: PretrainDataset})
 
     def __call__(self):
 
-        return self.direct[self.version](self.data, self.config_args['block_size'], self.pretrain_vocab)
+        return self.direct[self.version](self.train_data_path, self.misc_data_paths, self.config_args['block_size'])
 
 
 class PretrainDataset(Dataset):

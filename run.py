@@ -8,15 +8,11 @@ import torch
 import os
 
 
-def main(data_paths, version, config_args, train_args, func, save_dir, pretrain_state=None):
+def main(train_data_path, data_paths, version, config_args, train_args, func, save_dir, pretrain_state=None):
 
     if pretrain_state:
-        pretrain_vocab = {'itos': pretrain_state['itos'],
-                          'stoi': pretrain_state['stoi']}
-
         state_dict = pretrain_state['state_dict']
     else:
-        pretrain_vocab = None
         state_dict = None
 
     # get device
@@ -26,10 +22,10 @@ def main(data_paths, version, config_args, train_args, func, save_dir, pretrain_
     # build datasets
     print('\nProcessing dataset...')
 
-    train_dataset = dataset.Directory(data_paths,
+    train_dataset = dataset.Directory(train_data_path,
+                                      data_paths,
                                       version,
-                                      config_args,
-                                      pretrain_vocab)()
+                                      config_args)()
     # load model
     mconf = model.GPTConfig(
         vocab_size=train_dataset.vocab_size,
@@ -169,4 +165,10 @@ if __name__ == "__main__":
     arguments = utils.TrainArgs(args.args_path, super_config_train_args, pretrain_args=pretrain_args)
     config_args, train_args = arguments()
 
-    main(data_dir, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
+    # map version to train data:
+    v2d = {0: os.path.join(data_dir, 'kingbase_cleaned.txt')}
+    train_data_path = v2d[version]
+
+    assert os.path.isfile(train_data_path)
+
+    main(train_data_path, data_dir, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
