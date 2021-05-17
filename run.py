@@ -111,7 +111,7 @@ if __name__ == "__main__":
         answer = questionary.confirm(f'Use default data directory--{def_data}?').ask()
         if answer:
             data_dir = 'data/datasets-cleaned'
-            assert os.path.isfile(data_dir), 'DATA FILE NOT FOUND'
+            assert os.path.isdir(data_dir), 'DATA FILE NOT FOUND'
         else:
             raise FileExistsError('Must provide a dataset for training!')
 
