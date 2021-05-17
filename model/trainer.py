@@ -28,7 +28,8 @@ class Trainer:
 
         self.save_dir = save_dir
 
-        if self.func == 'finetune' and self.load_params:
+        if self.load_params:
+        # if self.func == 'finetune' and self.load_params:
             print('\nLoading pretrain params in...\n')
             self.model.load_state_dict(self.load_params)
 

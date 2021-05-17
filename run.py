@@ -129,8 +129,9 @@ if __name__ == "__main__":
             raise ValueError('Cannot finteune without a pretrained model!')
 
     # Get args if provided for finetune
-    if func == 'finetune' and args.ckpt_params:
-        ckpt_dict = torch.load(args.ckpt__params)
+    # if func == 'finetune' and args.ckpt_params:
+    if args.ckpt_params:
+        ckpt_dict = torch.load(args.ckpt_params)
         ckpt_model_config = ckpt_dict['model_config']
         ckpt_train_config = ckpt_dict['train_config']
         ckpt_args = ckpt_model_config.__dict__.update(ckpt_train_config.__dict__)
