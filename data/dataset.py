@@ -1,4 +1,4 @@
-from data.vocab import CharVocab
+from data.vocab import AdvancedVocab, CharVocab
 import random
 import torch
 from torch.utils.data import Dataset
@@ -7,6 +7,38 @@ game_splits = {'early': 0,
                'mid': 16,
                'late': 32}
 
+class Pretrain_Word_Level_Chess(Dataset):
+    def __init__(self, train_data_path, misc_data_paths, block_size):
+
+        self.block_size = block_size
+
+        # extract all of the relevant training games
+        misc_dataset = []
+        train_dataset = open(train_data_path, 'r').read().splitlines()
+        for path in misc_data_paths:
+            misc_dataset = misc_dataset + open(path, 'r').read().splitlines()
+
+        self.vocab = AdvancedVocab(misc_dataset + train_dataset)
+        print(f'Data consists of {len(self.vocab.stoi)} unique characters')
+
+        # TODO: Vocab needs to be encoded and include chess + commentary together (from the very start)
+        self.data = [game.encode('utf-8').decode('ascii', errors='ignore').strip() for game in train_dataset]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+
+        game = self.data[idx].split(' ')
+        game = game + [self.vocab.PAD_CHAR] * (self.block_size - len(game))
+
+        x = game[:-1]
+        y = game[1:]
+
+        x = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in x], dtype=torch.long)
+        y = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in y], dtype=torch.long)
+
+        return x, y
 
 class Pretrain_Chess(Dataset):
 
@@ -470,7 +502,7 @@ class Finetune_Comm(Dataset):
     pass
 
 
-finetune_versions = {0: Pretrain_Chess,
+finetune_versions = {0: Pretrain_Word_Level_Chess,
                      1: Finetune_Chess,
                      2: Pretrain_Comm,
                      3: Finetune_Comm,
