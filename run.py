@@ -170,3 +170,4 @@ if __name__ == "__main__":
     assert os.path.isfile(train_data_path)
 
     main(train_data_path, data_dir_list, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
+    4943104

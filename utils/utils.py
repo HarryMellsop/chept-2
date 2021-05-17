@@ -5,7 +5,7 @@ from torch.nn import functional as F
 import json
 
 default_config_args = {
-    "block_size": 512,
+    "block_size": 256,
     "n_layer": 12,
     "n_head": 32,
     "n_embed": 256
@@ -13,7 +13,7 @@ default_config_args = {
 
 default_train_args = {
     "max_epochs": 1,
-    "batch_size": 2,
+    "batch_size": 13,
     "grad_norm_clip": 1.0,
     "learning_rate": 1e-3,
     "num_workers": 4
