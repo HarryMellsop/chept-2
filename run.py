@@ -10,10 +10,9 @@ import os
 
 def main(train_data_path, data_paths, version, config_args, train_args, func, save_dir, pretrain_state=None):
 
+    # TODO finish loading ckpt
     if pretrain_state:
         state_dict = pretrain_state['state_dict']
-    else:
-        state_dict = None
 
     # get device
     device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
@@ -61,7 +60,7 @@ if __name__ == "__main__":
                         help='Directory to save checkpoints.')
 
     # definitely use pretrain params when finetuning
-    parser.add_argument('--pretrain_params', type=str,
+    parser.add_argument('--ckpt_params', type=str,
                         help='Path to model params (use for finetune).')
     parser.add_argument('--args_path', type=str,
                         help='Path to JSON training args.')
@@ -125,24 +124,22 @@ if __name__ == "__main__":
     if not os.path.isdir(save_dir):
         os.makedirs(save_dir)
 
-    if func == 'pretrain' and args.pretrain_params:
-        assert questionary.confirm('Pretrain is provided with pretrain params. Continue?').ask()
-    if func == 'finetune' and not args.pretrain_params:
+    if func == 'finetune' and not args.ckpt_params:
         if version != 3:
             raise ValueError('Cannot finteune without a pretrained model!')
 
     # Get args if provided for finetune
-    if func == 'finetune' and args.pretrain_params:
-        pretrain_dict = torch.load(args.pretrain_params)
-        pretrain_model_config = pretrain_dict['model_config']
-        pretrain_train_config = pretrain_dict['train_config']
-        pretrain_args = pretrain_model_config.__dict__.update(pretrain_train_config.__dict__)
+    if func == 'finetune' and args.ckpt_params:
+        ckpt_dict = torch.load(args.ckpt__params)
+        ckpt_model_config = ckpt_dict['model_config']
+        ckpt_train_config = ckpt_dict['train_config']
+        ckpt_args = ckpt_model_config.__dict__.update(ckpt_train_config.__dict__)
     else:
-        pretrain_args = None
-        pretrain_dict = None
+        ckpt_args = None
+        ckpt_dict = None
 
     # Check config args
-    meta_args = ['data_dir', 'save_dir', 'function', 'pretrain_params']
+    meta_args = ['data_dir', 'save_dir', 'function', 'ckpt_params']
     super_config_train_args = {key: val for key, val in vars(args).items() if key not in meta_args}     
 
     default_config_args = utils.default_config_args
@@ -156,11 +153,11 @@ if __name__ == "__main__":
             print("Train Args:", default_train_args)
 
     # Mixed args
-    if pretrain_args and (len(set(super_config_train_args.values())) > 1 or args.args_path):
+    if ckpt_args and (len(set(super_config_train_args.values())) > 1 or args.args_path):
         print('WARNING: DO NOT CHANGE MODEL CONFIGURATION FOR FINETUNING')
 
     # get separate updated config and train args
-    arguments = utils.TrainArgs(args.args_path, super_config_train_args, pretrain_args=pretrain_args)
+    arguments = utils.TrainArgs(args.args_path, super_config_train_args, pretrain_args=ckpt_args)
     config_args, train_args = arguments()
 
     # map version to train data:
@@ -169,5 +166,9 @@ if __name__ == "__main__":
 
     assert os.path.isfile(train_data_path)
 
+<<<<<<< HEAD
+    main(train_data_path, data_dir_list, version, config_args, train_args, func, save_dir, pretrain_state=ckpt_dict)
+=======
     main(train_data_path, data_dir_list, version, config_args, train_args, func, save_dir, pretrain_state=pretrain_dict)
     4943104
+>>>>>>> 6bdd36702c875806d5c2e92e52d972dd8f23453e
