@@ -29,8 +29,8 @@ class Trainer:
         self.save_dir = save_dir
 
         if self.load_params:
-        # if self.func == 'finetune' and self.load_params:
-            print('\nLoading pretrain params in...\n')
+        # ckpt loading
+            print('\nLoading params...\n')
             self.model.load_state_dict(self.load_params)
 
         # take over whatever gpus are on the system

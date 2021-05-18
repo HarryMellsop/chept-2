@@ -8,11 +8,13 @@ import torch
 import os
 
 
-def main(train_data_path, data_paths, version, config_args, train_args, func, save_dir, pretrain_state=None):
+def main(func, task, word_level, train_data_path, data_paths, config_args, train_args, save_dir, pretrain_state=None):
 
-    # TODO finish loading ckpt
+    # Get ckpt state if we are re-loading from ckpt
     if pretrain_state:
         state_dict = pretrain_state['state_dict']
+    else:
+        state_dict = None
 
     # get device
     device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
@@ -21,9 +23,11 @@ def main(train_data_path, data_paths, version, config_args, train_args, func, sa
     # build datasets
     print('\nProcessing dataset...')
 
-    train_dataset = dataset.Directory(train_data_path,
+    train_dataset = dataset.Directory(func,
+                                      task,
+                                      word_level,
+                                      train_data_path,
                                       data_paths,
-                                      version,
                                       config_args)()
     # load model
     mconf = model.GPTConfig(
@@ -49,19 +53,27 @@ def main(train_data_path, data_paths, version, config_args, train_args, func, sa
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
+    # positional args
     parser.add_argument('function', type=str,
                         help='Pretrain or finetune model.',
                         choices=["pretrain", "finetune"])
-    parser.add_argument('--version', type=int, default=None,
-                        help='Finetune version.')
+    parser.add_argument('task', type=str,
+                        help='Chess or commentary.',
+                        choices=['chess', 'commentary'])
+    parser.add_argument('--word_level', action='store_true', default=False,
+                        help='Character or word level embeddings')
+
     parser.add_argument('--data_dir', type=str,
                         help='Dataset directory to use.')
+    parser.add_argument('--train_path', type=str,
+                        help='Train file to use.')
     parser.add_argument('--save_dir', type=str,
                         help='Directory to save checkpoints.')
 
     # definitely use pretrain params when finetuning
     parser.add_argument('--ckpt_params', type=str,
                         help='Path to model params (use for finetune).')
+
     parser.add_argument('--args_path', type=str,
                         help='Path to JSON training args.')
     parser.add_argument('--block_size', type=int,
@@ -88,17 +100,6 @@ if __name__ == "__main__":
     data_dir = args.data_dir
     save_dir = args.save_dir
     func = args.function
-    version = args.version
-
-    possible_versions = list(dataset.finetune_versions.keys())
-
-    if not version:
-        version = 0
-
-    elif not version and func == 'finetune':
-        print('WARNING: FINETUNING WITHOUT A VERSION')
-        print('SETTING TO DEFAULT FINETUNE VERSION 0')
-        version = 0
 
     if not data_dir:
         def_data = 'data/datasets-cleaned'
@@ -125,13 +126,13 @@ if __name__ == "__main__":
         os.makedirs(save_dir)
 
     if func == 'finetune' and not args.ckpt_params:
-        if version != 3:
-            raise ValueError('Cannot finteune without a pretrained model!')
+        raise ValueError('MUST SPECIFY CHECKPOINT TO FINETUNE FROM')
 
     # Get args if provided for finetune
     # if func == 'finetune' and args.ckpt_params:
+    device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
     if args.ckpt_params:
-        ckpt_dict = torch.load(args.ckpt_params)
+        ckpt_dict = torch.load(args.ckpt_params, map_location=device)
         ckpt_model_config = ckpt_dict['model_config']
         ckpt_train_config = ckpt_dict['train_config']
         ckpt_args = ckpt_model_config.__dict__.update(ckpt_train_config.__dict__)
@@ -162,9 +163,22 @@ if __name__ == "__main__":
     config_args, train_args = arguments()
 
     # map version to train data:
-    v2d = {0: os.path.join(data_dir, 'kaggle_cleaned.txt')}
-    train_data_path = v2d[version]
+    if args.train_path:
+        train_data_path = args.train_path
+    else:
+        if func == 'pretrain':
+            if args.task == 'chess':
+                train_data_path = os.path.join(data_dir, 'kaggle_cleaned.txt')
+            elif args.task == 'commentary':
+                # TODO: USE REAL COMMENTARY FILE
+                train_data_path = os.path.join(data_dir, 'kaggle_cleaned.txt')
+        elif func == 'finetune':
+            if args.task == 'chess':
+                train_data_path = os.path.join(data_dir, 'kingbase_cleaned.txt')
+            elif args.task == 'commentary':
+                # TODO: USE REAL COMMENTARY FILE
+                train_data_path = os.path.join(data_dir, 'kaggle_cleaned.txt')
 
-    assert os.path.isfile(train_data_path)
+    assert os.path.isfile(train_data_path), 'Train file not found'
 
-    main(train_data_path, data_dir_list, version, config_args, train_args, func, save_dir, pretrain_state=ckpt_dict)
+    main(func, args.task, args.word_level, train_data_path, data_dir_list, config_args, train_args, save_dir, pretrain_state=ckpt_dict)
