@@ -16,8 +16,6 @@ import tqdm
 import sys
 import os
 
-# import pdb; pdb.set_trace()
-# sys.path.append(os.getcwd().split("/")[:-1])
 
 def get_iteration_num(ckpt_file):
     """
@@ -25,13 +23,28 @@ def get_iteration_num(ckpt_file):
     """
     return int(ckpt_file.split("iter_")[-1].split(".pt")[0])
 
-def get_sorted_checkpoints(ckpt_dir, exclude_first=True):
+def get_epoch_num(ckpt_file):
+    """
+    Returns the epoch number from a ckpt_file or path.
+    """
+    return int(ckpt_file.split("epoch_")[-1].split(".pt")[0])
+
+def get_sorted_checkpoints(ckpt_dir, exclude_first=True, by_epoch=False):
     """
     Returns checkpoints in increasing order of iteration.
+
+    if by_epoch: only returns epoch checkpoints
     """
 
-    files = np.array(glob.glob(ckpt_dir + "/iter_*.pt"))
-    iters = np.array([get_iteration_num(file) for file in files])
+    if by_epoch:
+        match_str = "/epoch_*.pt"
+        extract_fn = get_epoch_num
+    else:
+        match_str = "/iter_*.pt"
+        extract_fn = get_iteration_num
+
+    files = np.array(glob.glob(ckpt_dir + match_str))
+    iters = np.array([extract_fn(file) for file in files])
     
     sorted_idx = np.argsort(iters)
     files = files[sorted_idx]
@@ -39,23 +52,31 @@ def get_sorted_checkpoints(ckpt_dir, exclude_first=True):
     if exclude_first:
         files = files[1:]
 
-    return files
+    return iters, files
 
-def get_losses(ckpt_dir):
+def get_losses(ckpt_dir, by_epoch=False, exclude_first=True):
+    """"
+    Returns loss values (along with iteration number)
 
-    files = get_sorted_checkpoints(ckpt_dir)
+    Kwargs are those for get_sorted_checkpoints.
+    """
 
-    iters = []
+    iters, files = get_sorted_checkpoints(ckpt_dir, 
+                                          exclude_first=exclude_first, 
+                                          by_epoch=by_epoch)
+
     losses = []
     for file in tqdm.tqdm(files):
-        iters.append(get_iteration_num(file))
 
         # map to CPU cause we don't need CUDA here
         losses.append(torch.load(file, map_location="cpu")["loss"])
 
-    return iters, losses
+    return iters.tolist(), losses
 
 def plot_losses(iters, losses):
+    """
+    Plots losses vs. iteration
+    """
 
     fig = plt.Figure()
     plt.plot(iters, losses)
@@ -65,6 +86,6 @@ def plot_losses(iters, losses):
 
 
 if __name__ == "__main__":
-    ckpt_dir = "ckpts/pretrain_default"
-    iters, losses = get_losses(ckpt_dir)
+    ckpt_dir = "ckpts/pretrain_default_2"
+    iters, losses = get_losses(ckpt_dir, exclude_first=False, by_epoch=True)
     plot_losses(iters, losses)
