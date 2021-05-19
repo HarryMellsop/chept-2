@@ -132,7 +132,7 @@ if __name__ == "__main__":
     # if func == 'finetune' and args.ckpt_params:
     device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
     if args.ckpt_params:
-        ckpt_dict = torch.load(args.ckpt_params, map_location=device)
+        ckpt_dict = torch.load(args.ckpt_params, map_location=torch.device(device))
         ckpt_model_config = ckpt_dict['model_config']
         ckpt_train_config = ckpt_dict['train_config']
         ckpt_args = ckpt_model_config.__dict__.update(ckpt_train_config.__dict__)
