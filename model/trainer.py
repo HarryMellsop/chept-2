@@ -62,7 +62,8 @@ class Trainer:
             lr=config.learning_rate,
         )
 
-        def run_epoch(split):
+        # NOTE: split doesn't appear to do anything here
+        def run_epoch(split, epoch_num=0):
             model.train(True)
 
             data = self.train_dataset
@@ -77,7 +78,7 @@ class Trainer:
             for it, (x, y) in pbar:
                 if it % config.save_interval == 0:
                     avg_loss = cumulative_loss / config.save_interval
-                    self.save_checkpoint(f'iter_{it}.pt', loss=avg_loss)
+                    self.save_checkpoint(f'epoch_{epoch_num}_iter_{it}.pt', loss=avg_loss)
                     cumulative_loss = 0
 
                 # place data on the correct device
@@ -90,7 +91,7 @@ class Trainer:
                     loss = loss.mean()
                 if loss <= (0.8 * min_loss):
                     min_loss = loss
-                    self.save_checkpoint('best_loss.pt', loss=loss.item())
+                    self.save_checkpoint(f'epoch_{epoch_num}_best_loss.pt', loss=loss.item())
 
                 # accumulate avg loss for readout
                 cumulative_loss += loss.item()
@@ -106,5 +107,5 @@ class Trainer:
 
         self.tokens = 0
         for epoch in range(config.max_epochs):
-            run_epoch('train')
+            run_epoch('train', epoch_num=epoch)
             self.save_checkpoint(f'epoch_{epoch}.pt')
