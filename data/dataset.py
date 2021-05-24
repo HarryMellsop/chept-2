@@ -128,76 +128,6 @@ class Finetune_Word_Level_Chess(Dataset):
         return x, y
 
 
-class Finetune_Middle(Dataset):
-
-    def __init__(self, data, block_size, pretrain_vocab):
-
-        assert pretrain_vocab, "Must have pretrain vocab for finetuning"
-
-        self.block_size = block_size
-        self.PAD_CHAR = u"\u25A1"
-        self.MASK_CHAR_1 = u"\u2047"
-        self.MASK_CHAR_2 = u"\u2047"
-
-        chars = list(sorted(list(set(data))))
-        if '\n' in chars:
-            chars.remove('\n')
-
-        # Check and insert pad and mask chars
-        if self.PAD_CHAR in chars:
-            chars.remove(self.PAD_CHAR)
-        chars.insert(0, self.PAD_CHAR)
-        if self.MASK_CHAR_1 in chars:
-            chars.remove(self.MASK_CHAR_1)
-        chars.insert(0, self.MASK_CHAR_1)
-        if self.MASK_CHAR_2 in chars:
-            chars.remove(self.MASK_CHAR_2)
-        chars.insert(0, self.MASK_CHAR_2)
-
-        self.stoi = pretrain_vocab['stoi']
-        self.itos = pretrain_vocab['itos']
-
-        assert len(self.stoi) == len(self.itos)
-
-        breakpoint()
-        self.vocab_size = len(self.stoi)
-        self.data_size = len(data)
-
-        print('Data has %d characters, %d unique.' % (self.data_size, self.vocab_size))
-
-        self.data = list(data.encode('utf-8').decode('ascii', errors='ignore').split('\n'))[:-1]
-
-        self.data = list(filter(lambda x: len(x.split(' ')) - 1 >= game_splits['mid'], self.data))
-        self.min_pt = game_splits['mid']
-        self.max_pt = game_splits['late']
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-
-        game = self.data[idx]
-        spaces = [idx for idx, cur in enumerate(game) if cur == ' ']
-        n_spaces = len(spaces)
-
-        index = random.randint(self.min_pt, self.max_pt)
-        m_start, m_stop = spaces[index] + 1, spaces[index + 1]
-        x = game[:m_start] + self.MASK_CHAR_1 + game[m_start:m_stop + 1] + self.MASK_CHAR_1
-        x = x + self.PAD_CHAR * (self.block_size - len(x))
-        y = self.PAD_CHAR * m_start + self.MASK_CHAR_1 + game[m_start:m_stop + 1] + self.MASK_CHAR_1
-        y = y + self.PAD_CHAR * (self.block_size - len(y))
-
-        assert len(x) == len(y) == self.block_size
-
-        x = x[:-1]
-        y = y[1:]
-
-        x = torch.tensor([self.stoi[c] for c in x], dtype=torch.long)
-        y = torch.tensor([self.stoi[c] for c in y], dtype=torch.long)
-
-        return x, y
-
-
 class Commentary_Dataset(Dataset):
 
     def __init__(self, data, block_size, pretrain_vocab=None):
@@ -333,11 +263,14 @@ class PretrainDataset(Dataset):
         return x, y
 
 
-class Finetune_Char_Level_Chess:
+class Finetune_Char_Level_Chess(Dataset):
     pass
 
 
-class Pretrain_Word_Level_Commentary:
+class Pretrain_Word_Level_Commentary(Dataset):
+    pass
+
+class Finetune_Word_Level_Commentary(Dataset):
     pass
 
 
@@ -345,4 +278,5 @@ finetune_versions = {('pretrain', 'chess', True): Pretrain_Word_Level_Chess,
                      ('pretrain', 'chess', False): Pretrain_Char_Level_Chess,
                      ('finetune', 'chess', True): Finetune_Word_Level_Chess,
                      ('finetune', 'chess', False): Finetune_Char_Level_Chess,
-                     ('pretrain', 'commentary', False): Pretrain_Word_Level_Commentary}
+                     ('pretrain', 'commentary', True): Pretrain_Word_Level_Commentary,
+                     ('finetune', 'commentary', True): Finetune_Word_Level_Commentary}
