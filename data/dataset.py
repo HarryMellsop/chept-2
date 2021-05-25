@@ -285,7 +285,6 @@ class Pretrain_Word_Level_Commentary(Dataset):
         print("Maximum data length:")
         print(max([len(entry) for entry in self.data]))
         print(self.block_size)
-        breakpoint()
 
     def __len__(self):
         return len(self.data)
@@ -293,6 +292,8 @@ class Pretrain_Word_Level_Commentary(Dataset):
     def __getitem__(self, idx):
 
         game = self.data[idx].lower()
+        # make sure english string is less than block size
+        game = game[:self.block_size]
         game = game + self.vocab.PAD_CHAR * (self.block_size - len(game))
 
         x = game[:-1]
