@@ -98,7 +98,6 @@ class Finetune_Word_Level_Chess(Dataset):
 
         self.data = [game.encode('utf-8').decode('ascii', errors='ignore').strip() for game in train_dataset]
         self.length = len(self.data)
-        # breakpoint()
 
     def __len__(self):
         return len(self.data)
@@ -113,7 +112,8 @@ class Finetune_Word_Level_Chess(Dataset):
 
         # no more mask CHAR
         index = random.randint(min_pt, max_pt)
-        game = game[:index] + [self.PAD_CHAR] * (self.block_size - len(game))
+        game = game[:index]
+        game = game + [self.PAD_CHAR] * (self.block_size - len(game))
 
         x = game[:-1]
         y = game[1:]
