@@ -268,7 +268,42 @@ class Finetune_Char_Level_Chess(Dataset):
 
 
 class Pretrain_Word_Level_Commentary(Dataset):
-    pass
+    def __init__(self, train_data_path, misc_data_paths, block_size):
+
+        self.block_size = block_size
+
+        # extract all of the relevant training games
+        misc_dataset = []
+        train_dataset = open(train_data_path, 'r').read().splitlines()
+        for path in misc_data_paths:
+            misc_dataset = misc_dataset + open(path, 'r').read().splitlines()
+
+        self.vocab = AdvancedVocab(misc_dataset + train_dataset)
+        print(f'Data consists of {len(self.vocab.stoi)} unique characters')
+
+        self.data = [game.encode('utf-8').decode('ascii', errors='ignore') for game in train_dataset]
+        print("Maximum data length:")
+        print(max([len(entry) for entry in self.data]))
+        print(self.block_size)
+        breakpoint()
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+
+        game = self.data[idx].lower()
+        game = game + self.vocab.PAD_CHAR * (self.block_size - len(game))
+
+        x = game[:-1]
+        y = game[1:]
+
+        x = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in x], dtype=torch.long)
+        y = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in y], dtype=torch.long)
+
+        return x, y
+
+
 
 class Finetune_Word_Level_Commentary(Dataset):
     pass
