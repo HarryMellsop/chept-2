@@ -111,16 +111,12 @@ class Finetune_Word_Level_Chess(Dataset):
         choice = np.random.choice(self.portions)
         min_pt, max_pt = choice * third, (choice + 1) * third
 
+        # no more mask CHAR
         index = random.randint(min_pt, max_pt)
-        x = game[:index] + [self.MASK_CHAR_1] + game[index:index + 1] + [self.MASK_CHAR_1]
-        x = x + [self.PAD_CHAR] * (self.block_size - len(x))
-        y = [self.PAD_CHAR] * index + [self.MASK_CHAR_1] + game[index:index + 1] + [self.MASK_CHAR_1]
-        y = y + [self.PAD_CHAR] * (self.block_size - len(y))
+        game = game[:index] + [self.PAD_CHAR] * (self.block_size - len(game))
 
-        assert len(x) == len(y) == self.block_size
-
-        x = x[:-1]
-        y = y[1:]
+        x = game[:-1]
+        y = game[1:]
 
         x = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in x], dtype=torch.long)
         y = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in y], dtype=torch.long)
