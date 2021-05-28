@@ -98,3 +98,26 @@ def sample(model, x, steps, temperature=1.0, sample=False, top_k=None):
         x = torch.cat((x, ix), dim=1)
 
     return x
+
+# Get the most recent parameters file from the ckpts
+def get_recent_ckpt(ckpt_dir):
+
+    if not os.path.isdir(ckpt_dir):
+        raise ValueError(f"Default checkpoint dir at {ckpt_dir} missing!")
+
+    files = os.listdir(ckpt_dir)
+    if 'best_loss.pt' in files:
+        answer = questionary.confirm("File best_loss.pt found. Use this file?").ask()
+        if answer:
+            return os.path.join(ckpt_dir, 'best_loss.pt')
+    epoch_list = [x for x in files if 'epoch' in x]
+    if len(epoch_list) > 0:
+        answer = questionary.confirm("Epoch files found. Use best epoch file?").ask()
+        if answer:
+            epoch_list.sort(key=lambda x: int(x.split('_')[1].split('.')[0]), reverse=True)
+            return os.path.join(ckpt_dir, epoch_list[0])
+
+    iter_list = [x for x in files if 'iter' in x]
+    iter_list.sort(key=lambda x: int(x.split('_')[1].split('.')[0]), reverse=True)
+
+    return os.path.join(ckpt_dir, iter_list[0])
