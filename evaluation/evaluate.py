@@ -134,5 +134,6 @@ def initialise_model(ckpt_path):
 
 if __name__ == "__main__":
     print("It's time to make a change...")
-    gpt_model, stoi, itos = initialise_model('ckpts/epoch_1.pt')
-    print(bot_vs_stockfish(gpt_model, itos, stoi))
+    gpt_model, stoi, itos = initialise_model('ckpts/pretrain-english/epoch_0_iter_14000.pt')
+    while True:
+        print(bot_vs_stockfish(gpt_model, itos, stoi))
