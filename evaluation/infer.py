@@ -13,7 +13,9 @@ device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
 
 if __name__ == '__main__':
     # load the GPT model from the parameters
-    ckpt_path = get_recent_ckpt('./ckpts/pretrain_default')
+    # ckpt_path = get_recent_ckpt('./ckpts/pretrain-english')
+    ckpt_path = './ckpts/pretrain-english/epoch_0_iter_5000.pt'
+    print(f'Loading parameters from {ckpt_path}')
     ckpt = torch.load(ckpt_path, map_location=torch.device(device))
     model_config = ckpt['model_config']
     itos = ckpt['itos']
@@ -35,7 +37,12 @@ if __name__ == '__main__':
 
     game_str = ''
     while True:
-        game_str += input(f"Enter your move from state {game_str}")
+        addor = input(f"Enter your move from state {game_str}")
+        if addor == 'MASKCHAR1':
+            addor = BaseVocab().MASK_CHAR_1
+        elif addor == 'MASKCHAR2':
+            addor = BaseVocab().MASK_CHAR_2
+        game_str += addor
         pred = get_prediction(game_str.split(" "), gpt_model, stoi, itos)
         print(f"My prediction is: {pred}")
         game_str += " " + pred + " "

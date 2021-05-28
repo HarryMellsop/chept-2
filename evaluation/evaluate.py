@@ -8,6 +8,7 @@ import os
 import torch
 import chess
 import chess.engine
+import IPython.display as vis
 
 device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
 engine = chess.engine.SimpleEngine.popen_uci("/usr/games/stockfish")

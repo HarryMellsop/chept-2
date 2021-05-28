@@ -96,17 +96,16 @@ class Pretrain_Word_Level_Commentary(Dataset):
         train_dataset = open(train_data_path, 'r').read().splitlines()
         chess_data = [('chess', game.encode('utf-8').decode('ascii', errors='ignore').strip()) for game in train_dataset]
         
-        english_dataset = open('data/datasets-cleaned/beemovie.txt', 'r').read().splitlines()
+        english_dataset = open('data/datasets-cleaned/blog.txt', 'r').read().splitlines()
         english_data = [('english', line.encode('utf-8').decode('ascii', errors='ignore').strip()) for line in english_dataset]
 
-        full_dataset = chess_data + english_data
-        self.data = random.choices(full_dataset, k=min(1000000, len(full_dataset)))
-
+        self.data = random.choices(chess_data, k=len(english_data)) + english_data
+        random.shuffle(self.data)
 
         print("Try and ensure some sort of balance between Chess and English")
         print(len(chess_data))
         print(len(english_data))
-        print(len(full_dataset))
+        print(len(self.data))
 
     def __len__(self):
         return len(self.data)
