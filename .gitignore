@@ -9,6 +9,7 @@ venv/
 # Large data files that can be downloaded using bundled python helpers
 data/datasets/*
 data/datasets-cleaned/*
+data/datasets-cleaned-english/*
 
 # Model parameters
 ckpt/*

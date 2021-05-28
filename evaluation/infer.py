@@ -14,7 +14,7 @@ device = torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'
 if __name__ == '__main__':
     # load the GPT model from the parameters
     # ckpt_path = get_recent_ckpt('./ckpts/pretrain-english')
-    ckpt_path = './ckpts/pretrain-english/epoch_0_iter_10000.pt'
+    ckpt_path = './ckpts/pretrain-english/epoch_0_iter_50000.pt'
     print(f'Loading parameters from {ckpt_path}')
     ckpt = torch.load(ckpt_path, map_location=torch.device(device))
     model_config = ckpt['model_config']

@@ -100,5 +100,6 @@ class AdvancedVocab(BaseVocab):
         self.stoi = {i:n for n, i in enumerate(vocab)}
         self.itos = {n:i for n, i in enumerate(vocab)}
         self.vocab_size = len(self.itos)
+        print(f'Vocab size: {len(self.stoi)}')
 
         assert len(self.stoi) == len(self.itos)

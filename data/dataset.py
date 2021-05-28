@@ -96,7 +96,7 @@ class Pretrain_Word_Level_Commentary(Dataset):
         train_dataset = open(train_data_path, 'r').read().splitlines()
         chess_data = [('chess', game.encode('utf-8').decode('ascii', errors='ignore').strip()) for game in train_dataset]
         
-        english_dataset = open('data/datasets-cleaned/blog.txt', 'r').read().splitlines()
+        english_dataset = open('data/datasets-cleaned-english/blog.txt', 'r').read().splitlines()
         english_data = [('english', line.encode('utf-8').decode('ascii', errors='ignore').strip()) for line in english_dataset]
 
         self.data = random.choices(chess_data, k=len(english_data)) + english_data
@@ -157,7 +157,7 @@ class Finetune_Word_Level_Commentary(Dataset):
         train_dataset = open(train_data_path, 'r').read().splitlines()
         chess_data = [('chess', game.encode('utf-8').decode('ascii', errors='ignore').strip()) for game in train_dataset]
 
-        commentary_dataset = open('data/datasets-cleaned/commentary.txt', 'r').read().splitlines()
+        commentary_dataset = open('data/datasets-cleaned-english/commentary.txt', 'r').read().splitlines()
         commentary_data = [('commentary', line.encode('utf-8').decode('ascii', errors='ignore').strip()) for line in commentary_dataset]
 
         self.data = random.choices(chess_data, k=len(commentary_data)) + commentary_data
