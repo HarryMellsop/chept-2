@@ -101,6 +101,8 @@ def bot_vs_stockfish(gpt_model, itos, stoi, starting_game_str='', visualise=Fals
         illegal_moves.append(illegal_attempts)
         if bot_move == None:
             if visualise: display(f"CANNOT GENERATE LEGAL MOVE, STOCKFISH WINS")
+            if visualise: vis.clear_output()
+            if visualise: vis.display(board)
             winner = 'STOCKFISH'
             reason = 'no-legal'
             break
@@ -113,7 +115,6 @@ def bot_vs_stockfish(gpt_model, itos, stoi, starting_game_str='', visualise=Fals
     return illegal_moves, winner, reason, game_str
 
 def initialise_model(ckpt_path):
-    vocab_constants = BaseVocab()
     ckpt = torch.load(ckpt_path, map_location=torch.device(device))
     model_config = ckpt['model_config']
     itos = ckpt['itos']

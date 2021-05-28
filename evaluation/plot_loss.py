@@ -87,6 +87,6 @@ def plot_losses(iters, losses):
 
 
 if __name__ == "__main__":
-    ckpt_dir = "./ckpts/pretrain-english"
+    ckpt_dir = "./ckpts/pretrain-english-epoch-1"
     iters, losses = get_losses(ckpt_dir, exclude_first=True)
     plot_losses(iters, losses)
