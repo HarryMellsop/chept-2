@@ -21,40 +21,36 @@ def get_iteration_num(ckpt_file):
     """
     Returns the iteration number from a ckpt_file or path.
     """
-    return int(ckpt_file.split("iter_")[-1].split(".pt")[0])
+    return int(ckpt_file.split("epoch_")[-1].split("_iter_")[-1].split(".pt")[0])
 
 def get_epoch_num(ckpt_file):
     """
     Returns the epoch number from a ckpt_file or path.
     """
-    return int(ckpt_file.split("epoch_")[-1].split(".pt")[0])
+    return int(ckpt_file.split("epoch_")[-1].split("_iter")[0])
 
-def get_sorted_checkpoints(ckpt_dir, exclude_first=True, by_epoch=False):
+def get_epoch_and_iter(ckpt_file):
+    return get_epoch_num(ckpt_file), get_iteration_num(ckpt_file)
+    
+
+def get_sorted_checkpoints(ckpt_dir, exclude_first=True):
     """
     Returns checkpoints in increasing order of iteration.
-
-    if by_epoch: only returns epoch checkpoints
     """
 
-    if by_epoch:
-        match_str = "/epoch_*.pt"
-        extract_fn = get_epoch_num
-    else:
-        match_str = "/iter_*.pt"
-        extract_fn = get_iteration_num
+    files = glob.glob(ckpt_dir + "/epoch_*_iter_*.pt")
+    iters = [get_epoch_and_iter(ckpt_file) for ckpt_file in files]
 
-    files = np.array(glob.glob(ckpt_dir + match_str))
-    iters = np.array([extract_fn(file) for file in files])
+    sort_idx = sorted(range(len(iters)),key=iters.__getitem__)
     
-    sorted_idx = np.argsort(iters)
-    files = files[sorted_idx]
+    files = np.array(files)[np.array(sort_idx)].tolist()
 
     if exclude_first:
         files = files[1:]
 
     return iters, files
 
-def get_losses(ckpt_dir, by_epoch=False, exclude_first=True):
+def get_losses(ckpt_dir, exclude_first=True):
     """"
     Returns loss values (along with iteration number)
 
@@ -62,8 +58,7 @@ def get_losses(ckpt_dir, by_epoch=False, exclude_first=True):
     """
 
     iters, files = get_sorted_checkpoints(ckpt_dir, 
-                                          exclude_first=exclude_first, 
-                                          by_epoch=by_epoch)
+                                          exclude_first=exclude_first)
 
     losses = []
     for file in tqdm.tqdm(files):
@@ -78,14 +73,16 @@ def plot_losses(iters, losses):
     Plots losses vs. iteration
     """
 
+    global_iters = [(epoch + 1)*iteration for (epoch, iteration) in iters]
+
     fig = plt.Figure()
-    plt.plot(iters, losses)
+    plt.plot(global_iters, losses)
     plt.xlabel("Iteration")
     plt.ylabel("Training Loss")
     plt.show()
 
 
 if __name__ == "__main__":
-    ckpt_dir = "ckpts/pretrain_default_2"
-    iters, losses = get_losses(ckpt_dir, exclude_first=False, by_epoch=True)
+    ckpt_dir = "/media/schlager/COLLIN/finetune_default_no_mask"
+    iters, losses = get_losses(ckpt_dir, exclude_first=False)
     plot_losses(iters, losses)
