@@ -191,7 +191,10 @@ class Finetune_Word_Level_Commentary(Dataset):
             game = pgn_preceding.split(' ')
             game += [self.vocab.MASK_CHAR_1]
             game += [char for char in commentary]
+            if len(game) >= self.block_size - 2:
+                game = game[:self.block_size - 3]
             game += [self.vocab.MASK_CHAR_1]
+            
             game = game + [self.vocab.PAD_CHAR] * (self.block_size - len(game))
 
             x = game[:-1]
