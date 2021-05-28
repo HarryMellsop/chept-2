@@ -42,43 +42,6 @@ class Pretrain_Word_Level_Chess(Dataset):
         return x, y
 
 
-class Pretrain_Char_Level_Chess(Dataset):
-
-    def __init__(self, train_data_path, misc_data_paths, block_size):
-
-        self.block_size = block_size
-
-        # extract all of the relevant training games
-        misc_dataset = []
-        train_dataset = open(train_data_path, 'r').read().splitlines()
-        for path in misc_data_paths:
-            misc_dataset = misc_dataset + open(path, 'r').read().splitlines()
-
-        self.vocab = CharVocab(misc_dataset + train_dataset)
-        print(f'Data consists of {len(self.vocab.stoi)} unique characters')
-
-        self.data = [game.encode('utf-8').decode('ascii', errors='ignore') for game in train_dataset]
-        print("Maximum data length:")
-        print(max([len(entry) for entry in self.data]))
-        print(self.block_size)
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-
-        game = self.data[idx]
-        game = game + self.vocab.PAD_CHAR * (self.block_size - len(game))
-
-        x = game[:-1]
-        y = game[1:]
-
-        x = torch.tensor([self.vocab.stoi[c] for c in x], dtype=torch.long)
-        y = torch.tensor([self.vocab.stoi[c] for c in y], dtype=torch.long)
-
-        return x, y
-
-
 class Finetune_Word_Level_Chess(Dataset):
     def __init__(self, train_data_path, misc_data_paths, block_size):
 
@@ -123,6 +86,68 @@ class Finetune_Word_Level_Chess(Dataset):
 
         return x, y
 
+class Pretrain_Word_Level_Commentary(Dataset):
+    def __init__(self, train_data_path, misc_data_paths, block_size):
+        self.block_size = block_size
+
+        # assume that the vocabulary is already precompiled
+        self.vocab = AdvancedVocab([])
+
+        train_dataset = open(train_data_path, 'r').read().splitlines()
+        chess_data = [('chess', game.encode('utf-8').decode('ascii', errors='ignore').strip()) for game in train_dataset]
+        
+        english_dataset = open('data/datasets-cleaned/beemovie.txt', 'r').read().splitlines()
+        english_data = [('english', line.encode('utf-8').decode('ascii', errors='ignore').strip()) for line in english_dataset]
+
+        full_dataset = chess_data + english_data
+        self.data = random.choices(full_dataset, k=min(1000000, len(full_dataset)))
+
+
+        print("Try and ensure some sort of balance between Chess and English")
+        print(len(chess_data))
+        print(len(english_data))
+        print(len(full_dataset))
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        datum = self.data[idx]
+        if datum[0] == 'chess':
+            # basically do exactly what we did for Pretrain Word Level Chess
+            game = datum[1].split(' ')
+            game = game + [self.vocab.PAD_CHAR] * (self.block_size - len(game))
+
+            x = game[:-1]
+            y = game[1:]
+
+            x = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in x], dtype=torch.long)
+            y = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in y], dtype=torch.long)
+            
+            return x, y
+        else:
+            # use one of the mask characters to indicate that English comes next, do next-character
+            # prediction on that
+            line = datum[1].lower()
+            # the above is going to be a line of english text
+            line = line + self.vocab.MASK_CHAR_1
+
+            # trim the line of english text down to the right size
+            line = line[:min(len(line), self.block_size - 5)]
+
+            # 'bracket' the english with the mask characters
+            line += self.vocab.MASK_CHAR_1
+            
+            # add the correct padding
+            line = line + ''.join([self.vocab.PAD_CHAR] * (self.block_size - len(line)))
+
+            x = line[:-1]
+            y = line[1:]
+
+            x = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in x], dtype=torch.long)
+            y = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in y], dtype=torch.long)
+            
+            return x, y
 
 class Commentary_Dataset(Dataset):
 
@@ -179,6 +204,42 @@ class Commentary_Dataset(Dataset):
 
         x = torch.tensor([self.stoi[c] for c in x], dtype=torch.long)
         y = torch.tensor([self.stoi[c] for c in y], dtype=torch.long)
+
+        return x, y
+
+class Pretrain_Char_Level_Chess(Dataset):
+
+    def __init__(self, train_data_path, misc_data_paths, block_size):
+
+        self.block_size = block_size
+
+        # extract all of the relevant training games
+        misc_dataset = []
+        train_dataset = open(train_data_path, 'r').read().splitlines()
+        for path in misc_data_paths:
+            misc_dataset = misc_dataset + open(path, 'r').read().splitlines()
+
+        self.vocab = CharVocab(misc_dataset + train_dataset)
+        print(f'Data consists of {len(self.vocab.stoi)} unique characters')
+
+        self.data = [game.encode('utf-8').decode('ascii', errors='ignore') for game in train_dataset]
+        print("Maximum data length:")
+        print(max([len(entry) for entry in self.data]))
+        print(self.block_size)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+
+        game = self.data[idx]
+        game = game + self.vocab.PAD_CHAR * (self.block_size - len(game))
+
+        x = game[:-1]
+        y = game[1:]
+
+        x = torch.tensor([self.vocab.stoi[c] for c in x], dtype=torch.long)
+        y = torch.tensor([self.vocab.stoi[c] for c in y], dtype=torch.long)
 
         return x, y
 
@@ -261,44 +322,6 @@ class PretrainDataset(Dataset):
 
 class Finetune_Char_Level_Chess(Dataset):
     pass
-
-
-class Pretrain_Word_Level_Commentary(Dataset):
-    def __init__(self, train_data_path, misc_data_paths, block_size):
-
-        self.block_size = block_size
-
-        # extract all of the relevant training games
-        misc_dataset = []
-        train_dataset = open(train_data_path, 'r').read().splitlines()
-        for path in misc_data_paths:
-            misc_dataset = misc_dataset + open(path, 'r').read().splitlines()
-
-        self.vocab = AdvancedVocab(misc_dataset + train_dataset)
-        print(f'Data consists of {len(self.vocab.stoi)} unique characters')
-
-        self.data = [game.encode('utf-8').decode('ascii', errors='ignore') for game in train_dataset]
-        print("Maximum data length:")
-        print(max([len(entry) for entry in self.data]))
-        print(self.block_size)
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-
-        game = self.data[idx].lower()
-        # make sure english string is less than block size
-        game = game[:self.block_size]
-        game = game + self.vocab.PAD_CHAR * (self.block_size - len(game))
-
-        x = game[:-1]
-        y = game[1:]
-
-        x = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in x], dtype=torch.long)
-        y = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in y], dtype=torch.long)
-
-        return x, y
 
 
 
