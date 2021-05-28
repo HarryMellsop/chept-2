@@ -148,6 +148,63 @@ class Pretrain_Word_Level_Commentary(Dataset):
             
             return x, y
 
+class Finetune_Word_Level_Commentary(Dataset):
+    def __init__(self, train_data_path, misc_data_paths, block_size):
+        self.block_size = block_size
+
+        self.vocab = AdvancedVocab([])
+
+        train_dataset = open(train_data_path, 'r').read().splitlines()
+        chess_data = [('chess', game.encode('utf-8').decode('ascii', errors='ignore').strip()) for game in train_dataset]
+
+        commentary_dataset = open('data/datasets-cleaned/commentary.txt', 'r').read().splitlines()
+        commentary_data = [('commentary', line.encode('utf-8').decode('ascii', errors='ignore').strip()) for line in commentary_dataset]
+
+        self.data = random.choices(chess_data, k=len(commentary_data)) + commentary_data
+        random.shuffle(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        datum = self.data[idx]
+        if datum[0] == 'chess':
+            # basically do exactly what we did for Pretrain Word Level Chess
+            game = datum[1].split(' ')
+            game = game + [self.vocab.PAD_CHAR] * (self.block_size - len(game))
+
+            x = game[:-1]
+            y = game[1:]
+
+            x = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in x], dtype=torch.long)
+            y = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in y], dtype=torch.long)
+            
+            return x, y
+        else:
+            line = datum[1]
+            split = line.split('|||')
+            pgn_preceding = split[0]
+            commentary = split[1].replace(' ', '_')[1:] # slice off the initial spacing in the commentary
+            # print(f'Preceding PGN: {pgn_preceding}')
+            # print(f'Associated commentary: {commentary}')
+
+            game = pgn_preceding.split(' ')
+            game += [self.vocab.MASK_CHAR_1]
+            game += [char for char in commentary]
+            game += [self.vocab.MASK_CHAR_1]
+            game = game + [self.vocab.PAD_CHAR] * (self.block_size - len(game))
+
+            x = game[:-1]
+            y = game[1:]
+
+            x = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in x], dtype=torch.long)
+            y = torch.tensor([self.vocab.stoi.get(c, self.vocab.stoi[self.vocab.UNK]) for c in y], dtype=torch.long)
+            
+            return x, y
+
+
+
+
 class Commentary_Dataset(Dataset):
 
     def __init__(self, data, block_size, pretrain_vocab=None):
@@ -320,11 +377,6 @@ class PretrainDataset(Dataset):
 
 
 class Finetune_Char_Level_Chess(Dataset):
-    pass
-
-
-
-class Finetune_Word_Level_Commentary(Dataset):
     pass
 
 
