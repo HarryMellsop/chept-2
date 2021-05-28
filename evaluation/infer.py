@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(1, '.')
 from data.vocab import BaseVocab
 from model import model
 from utils import utils

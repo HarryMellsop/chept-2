@@ -1,4 +1,6 @@
-from data.vocab import BaseVocab
+import sys
+sys.path.insert(1, '.')
+from data import vocab
 from model import model
 from utils import utils
 import questionary
