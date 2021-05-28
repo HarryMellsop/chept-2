@@ -7,7 +7,8 @@ to be identical to when it was saved so this is a work around)
 `python -m inference.plot_loss`
 
 """
-
+import sys
+sys.path.insert(1, '.')
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -44,9 +45,11 @@ def get_sorted_checkpoints(ckpt_dir, exclude_first=True):
     sort_idx = sorted(range(len(iters)),key=iters.__getitem__)
     
     files = np.array(files)[np.array(sort_idx)].tolist()
+    iters = np.array(iters)[np.array(sort_idx)].tolist()
 
     if exclude_first:
         files = files[1:]
+        iters = iters[1:]
 
     return iters, files
 
@@ -66,16 +69,17 @@ def get_losses(ckpt_dir, exclude_first=True):
         # map to CPU cause we don't need CUDA here
         losses.append(torch.load(file, map_location="cpu")["loss"])
 
-    return iters.tolist(), losses
+    return iters, losses
 
 def plot_losses(iters, losses):
     """
     Plots losses vs. iteration
     """
-
+    
     global_iters = [(epoch + 1)*iteration for (epoch, iteration) in iters]
 
     fig = plt.Figure()
+    print(global_iters)
     plt.plot(global_iters, losses)
     plt.xlabel("Iteration")
     plt.ylabel("Training Loss")
@@ -83,6 +87,6 @@ def plot_losses(iters, losses):
 
 
 if __name__ == "__main__":
-    ckpt_dir = "/media/schlager/COLLIN/finetune_default_no_mask"
-    iters, losses = get_losses(ckpt_dir, exclude_first=False)
+    ckpt_dir = "./ckpts/pretrain-english"
+    iters, losses = get_losses(ckpt_dir, exclude_first=True)
     plot_losses(iters, losses)
