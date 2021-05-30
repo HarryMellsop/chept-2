@@ -1,10 +1,9 @@
 """
 Plot loss extracted from a ckpts directory.
 
-Note: Run from project root. (torch.load requires model import structure
-to be identical to when it was saved so this is a work around)
+Usage:
 
-`python -m inference.plot_loss`
+python evaluation/plot_loss.py --ckpt_dir <dir_with_pt_files>
 
 """
 import sys
