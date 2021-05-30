@@ -36,6 +36,36 @@ if __name__ == '__main__':
     # temporary naive prediction logic
 
     game_str = ''
+
+    while True:
+        addor = input(f'Enter your move from state {game_str}')
+        game_str += addor
+
+        # get commentary on that first move
+        pred = get_commentary_prediction(game_str.split(" ") + [BaseVocab().MASK_CHAR_1], gpt_model, stoi, itos)
+        pred = ''.join(pred).replace('_', ' ')
+        print(f"Commentary on your move (without sampling): {pred}")
+
+        pred = get_commentary_prediction(game_str.split(" ") + [BaseVocab().MASK_CHAR_1], gpt_model, stoi, itos, sample=True)
+        pred = ''.join(pred).replace('_', ' ')
+        print(f"Commentary on your move (with sampling): {pred}")
+
+        pred = get_prediction(game_str.split(" "), gpt_model, stoi, itos)
+        print(f"My prediction is: {pred}")
+
+        game_str += " " + pred
+
+        pred = get_commentary_prediction(game_str.split(" ") + [BaseVocab().MASK_CHAR_1], gpt_model, stoi, itos)
+        pred = ''.join(pred).replace('_', ' ')
+        print(f"Commentary on my move (without sampling): {pred}")
+
+        pred = get_commentary_prediction(game_str.split(" ") + [BaseVocab().MASK_CHAR_1], gpt_model, stoi, itos, sample=True)
+        pred = ''.join(pred).replace('_', ' ')
+        print(f"Commentary on my move (with sampling): {pred}")
+
+        game_str += ' '
+
+    game_str = ''
     commentary_mode = False
     while True:
         addor = input(f"Enter your move from state {game_str}")

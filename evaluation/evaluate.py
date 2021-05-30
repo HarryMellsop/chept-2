@@ -283,7 +283,7 @@ def analyse(results_vec, engine):
 
 def main():
     engine = chess.engine.SimpleEngine.popen_uci("/usr/games/stockfish")
-    num_trials_per_pt = 100
+    num_trials_per_pt = 2000
 
     # extract parameters for pretrain chess, finetune chess, pretrain english, finetune commentary
 
